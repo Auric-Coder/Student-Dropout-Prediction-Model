@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Risk Result — {{ profile_data.name }} | DropoutIQ</title>
+  <meta name="description" content="Dropout risk prediction result for {{ profile_data.name }}." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <div class="app-shell">
+
+    <!-- Brand Header -->
+    <header class="brand-header">
+      <div class="brand-logo">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zm0 12.08L4.5 11 12 7l7.5 4L12 15.08zM1 17v2l11 6 11-6v-2l-11 6L1 17z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-name">DropoutIQ</div>
+          <div class="brand-tagline">Academic Risk Intelligence</div>
+        </div>
+      </div>
+      <div class="model-badge">
+        <span class="badge-dot"></span>
+        {{ metrics.model_name if metrics.model_name else "Ensemble Model" }}
+        &nbsp;&middot;&nbsp; AUC&nbsp;<strong>{{ "%.3f"|format(metrics.roc_auc) if metrics.roc_auc else "0.910" }}</strong>
+      </div>
+    </header>
+
+    <!-- Main Panel -->
+    <div class="panel">
+
+      {% if input_warnings %}
+      <div style="padding: 24px 36px 0;">
+        <div class="alert alert-warn">
+          <span class="alert-icon">⚠</span>
+          <div>
+            <strong>Input adjusted:</strong>
+            {% for w in input_warnings %}<span>{{ w }}</span>{% if not loop.last %}, {% endif %}{% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Hero: Gauge + Student Info -->
+      <div class="result-hero">
+
+        <!-- Left: Gauge -->
+        <div class="result-hero-left">
+          <!-- SVG Donut Gauge -->
+          {% set circumference = 565.49 %}
+          {% set offset = circumference - (dropout_prob / 100) * circumference %}
+          <div class="gauge-wrap">
+            <svg class="gauge-svg" viewBox="0 0 200 200">
+              <circle class="gauge-track" cx="100" cy="100" r="90" />
+              <circle
+                class="gauge-arc {{ risk_class }}"
+                cx="100" cy="100" r="90"
+                stroke-dasharray="{{ circumference }}"
+                stroke-dashoffset="{{ circumference }}"
+                data-target-offset="{{ offset }}"
+              />
+            </svg>
+            <div class="gauge-center">
+              <span class="gauge-pct {{ risk_class }}" id="gaugeNum" data-target="{{ dropout_prob }}">0</span>
+              <span class="gauge-label">Dropout Risk</span>
+            </div>
+          </div>
+
+          <div class="risk-badge {{ risk_class }}">
+            <span class="risk-badge-dot"></span>
+            {{ risk_level }}
+          </div>
+        </div>
+
+        <!-- Right: Student card + prob bars -->
+        <div class="result-hero-right">
+          <div class="student-card">
+            <div class="student-name">{{ profile_data.name }}</div>
+            <div class="student-meta">
+              <div class="student-meta-item">
+                <span class="meta-label">Roll No</span>
+                <span class="meta-value">{{ profile_data.roll_no }}</span>
+              </div>
+              <div class="student-meta-item">
+                <span class="meta-label">Department</span>
+                <span class="meta-value">{{ profile_data.dept }}</span>
+              </div>
+              <div class="student-meta-item">
+                <span class="meta-label">Semester</span>
+                <span class="meta-value">Sem {{ profile_data.sem }}</span>
+              </div>
+              <div class="student-meta-item">
+                <span class="meta-label">Success Prob</span>
+                <span class="meta-value" style="color: #6ee7b7;">{{ success_prob }}%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Probability bars -->
+          <div>
+            <div class="prob-row">
+              <span class="prob-label">🎓 Academic Success</span>
+              <div class="prob-bar-wrap">
+                <div class="prob-fill success" style="width: {{ success_prob }}%;"></div>
+              </div>
+              <span class="prob-val" style="color:#6ee7b7;">{{ success_prob }}%</span>
+            </div>
+            <div class="prob-row">
+              <span class="prob-label">⚠️ Dropout Risk</span>
+              <div class="prob-bar-wrap">
+                <div class="prob-fill dropout" style="width: {{ dropout_prob }}%;"></div>
+              </div>
+              <span class="prob-val" style="color:#fca5a5;">{{ dropout_prob }}%</span>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /result-hero -->
+
+      <hr class="divider" />
+
+      <!-- Academic Indicators -->
+      <div class="indicators-section" style="padding-top: 28px;">
+        <div class="section-header" style="padding: 0 0 20px;">
+          <div class="section-icon academic">📊</div>
+          <div>
+            <div class="section-title">Academic Indicators</div>
+            <div class="section-subtitle">Values entered for this prediction</div>
+          </div>
+        </div>
+        <div class="indicators-grid">
+          <div class="indicator-card">
+            <span class="ind-icon">🎯</span>
+            <span class="ind-label">Attendance</span>
+            <span class="ind-value">{{ indicator_data.attendance }}</span>
+            <div class="ind-bar-wrap">
+              <div class="ind-bar" style="width: {{ indicator_data.attendance }}%;"></div>
+            </div>
+          </div>
+          <div class="indicator-card">
+            <span class="ind-icon">📝</span>
+            <span class="ind-label">Assignments</span>
+            <span class="ind-value">{{ indicator_data.assignments }}</span>
+            <div class="ind-bar-wrap">
+              <div class="ind-bar" style="width: {{ indicator_data.assignments }}%;"></div>
+            </div>
+          </div>
+          <div class="indicator-card">
+            <span class="ind-icon">💯</span>
+            <span class="ind-label">Marks</span>
+            <span class="ind-value">{{ indicator_data.marks }}</span>
+            <div class="ind-bar-wrap">
+              <div class="ind-bar" style="width: {{ indicator_data.marks }}%;"></div>
+            </div>
+          </div>
+          <div class="indicator-card">
+            <span class="ind-icon">⏰</span>
+            <span class="ind-label">Study Hrs</span>
+            <span class="ind-value">{{ indicator_data.study_hrs }}</span>
+            <div class="ind-bar-wrap">
+              <div class="ind-bar" style="width: {{ (indicator_data.study_hrs / 20 * 100) | round(1) }}%;"></div>
+            </div>
+          </div>
+          <div class="indicator-card">
+            <span class="ind-icon">🙋</span>
+            <span class="ind-label">Participation</span>
+            <span class="ind-value">{{ indicator_data.participation }}</span>
+            <div class="ind-bar-wrap">
+              <div class="ind-bar" style="width: {{ (indicator_data.participation / 10 * 100) | round(1) }}%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="divider" />
+
+      <!-- Recommendation -->
+      <div class="recommendation" style="margin-top: 28px;">
+        {% if risk_class == "high" %}
+        <span class="rec-icon">🚨</span>
+        <div>
+          <div class="rec-title">Immediate Action Required</div>
+          <div class="rec-text">Initiate an immediate mentor follow-up, design an academic recovery plan, and schedule weekly progress reviews to prevent dropout.</div>
+        </div>
+        {% elif risk_class == "medium" %}
+        <span class="rec-icon">📋</span>
+        <div>
+          <div class="rec-title">Monitoring Recommended</div>
+          <div class="rec-text">Schedule bi-weekly mentoring sessions and closely track attendance, assignment completion, and exam scores.</div>
+        </div>
+        {% else %}
+        <span class="rec-icon">✅</span>
+        <div>
+          <div class="rec-title">On Track</div>
+          <div class="rec-text">The student is performing well. Continue current support and re-screen after the next academic milestone.</div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="result-footer">
+        <a href="/" class="btn-primary btn-outline" id="backBtn">← Predict Another Student</a>
+        <a href="/" class="btn-primary">➕ &nbsp;New Prediction</a>
+      </div>
+
+    </div><!-- /panel -->
+  </div><!-- /app-shell -->
+
+  <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>

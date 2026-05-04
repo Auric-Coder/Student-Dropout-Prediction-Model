@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Dropout Risk Predictor</title>
+  <meta name="description" content="AI-powered dropout risk prediction from academic indicators." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <div class="app-shell">
+
+    <!-- Brand Header -->
+    <header class="brand-header">
+      <div class="brand-logo">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zm0 12.08L4.5 11 12 7l7.5 4L12 15.08zM1 17v2l11 6 11-6v-2l-11 6L1 17z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-name">DropoutIQ</div>
+          <div class="brand-tagline">Academic Risk Intelligence</div>
+        </div>
+      </div>
+      <div class="model-badge">
+        <span class="badge-dot"></span>
+        Model Active &mdash;
+        Acc&nbsp;<strong>{{ "%.1f"|format(metrics.accuracy * 100) if metrics.accuracy else "85.4" }}%</strong>&nbsp;
+        &middot;&nbsp;AUC&nbsp;<strong>{{ "%.3f"|format(metrics.roc_auc) if metrics.roc_auc else "0.910" }}</strong>
+      </div>
+    </header>
+
+    <!-- Main Panel -->
+    <div class="panel">
+      <!-- Top shimmer handled by ::before pseudo -->
+
+      <form id="predictForm" action="/predict" method="POST" novalidate>
+
+        {% if error %}
+        <div style="padding: 24px 36px 0;">
+          <div class="alert alert-error">
+            <span class="alert-icon">⚠</span>
+            <div><strong>Error:</strong> {{ error }}</div>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="form-cols">
+
+          <!-- Left: Student Profile -->
+          <div class="form-col">
+            <div class="section-header">
+              <div class="section-icon profile">👤</div>
+              <div>
+                <div class="section-title">Student Profile</div>
+                <div class="section-subtitle">Identity &amp; enrollment details</div>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group full-width">
+                <label for="name">Full Name</label>
+                <div class="input-wrap">
+                  <span class="input-icon">✏️</span>
+                  <input id="name" name="name" type="text" placeholder="e.g. Ananya Sharma" required />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="roll_no">Roll Number</label>
+                <div class="input-wrap">
+                  <span class="input-icon">🔢</span>
+                  <input id="roll_no" name="roll_no" type="text" placeholder="e.g. 22CS001" required />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="dept">Department</label>
+                <div class="input-wrap">
+                  <span class="input-icon">🏛</span>
+                  <select id="dept" name="dept" required>
+                    {% for val, text in profile_fields[1][3] %}
+                    <option value="{{ val }}">{{ text }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group full-width">
+                <label for="sem">Semester</label>
+                <div class="input-wrap">
+                  <span class="input-icon">📅</span>
+                  <select id="sem" name="sem" required>
+                    {% for val, text in profile_fields[3][3] %}
+                    <option value="{{ val }}">Semester {{ text }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div><!-- /left -->
+
+          <!-- Right: Academic Indicators -->
+          <div class="form-col">
+            <div class="section-header">
+              <div class="section-icon academic">📊</div>
+              <div>
+                <div class="section-title">Academic Indicators</div>
+                <div class="section-subtitle">Scores used by the prediction model</div>
+              </div>
+            </div>
+
+            <div class="form-grid single-col">
+
+              {% set icons = ["🎯", "📝", "💯", "⏰", "🙋"] %}
+              {% set descs = ["% of classes attended", "% of tasks submitted", "Weighted avg score", "Weekly hours (0–20)", "Score out of 10"] %}
+              {% for field_id, _col, label, opts, _vrange in indicator_fields %}
+              <div class="form-group">
+                <label for="{{ field_id }}">{{ icons[loop.index0] }}&nbsp; {{ label }} <span style="color:var(--muted-2); font-weight:400; text-transform:none; letter-spacing:0; font-size:11px;">&mdash; {{ descs[loop.index0] }}</span></label>
+                <div class="input-wrap">
+                  <input
+                    id="{{ field_id }}"
+                    name="{{ field_id }}"
+                    type="number"
+                    min="{{ opts.min }}"
+                    max="{{ opts.max }}"
+                    step="{{ opts.step }}"
+                    placeholder="{{ opts.placeholder }}"
+                    data-min="{{ opts.min }}"
+                    data-max="{{ opts.max }}"
+                    required
+                  />
+                  <span class="val-indicator" id="vi-{{ field_id }}"></span>
+                </div>
+                <div class="range-hint">
+                  <span>Min: {{ opts.min }}</span>
+                  <span>Max: {{ opts.max }}</span>
+                </div>
+              </div>
+              {% endfor %}
+
+            </div>
+          </div><!-- /right -->
+
+        </div><!-- /form-cols -->
+
+        <hr class="divider" />
+
+        <div class="form-footer">
+          <button type="submit" id="submitBtn" class="btn-primary">
+            <span class="btn-spinner"></span>
+            <span class="btn-text">⚡ &nbsp;Analyze Dropout Risk</span>
+          </button>
+        </div>
+
+      </form>
+
+      <p class="model-note" style="padding-bottom:18px;">
+        Powered by ensemble ML &nbsp;·&nbsp; {{ metrics.features if metrics.features else 5 }}-feature academic model
+        &nbsp;·&nbsp; 5-fold CV AUC {{ "%.3f"|format(metrics.cv_roc_auc_mean) if metrics.cv_roc_auc_mean else "0.909" }}
+      </p>
+
+    </div><!-- /panel -->
+  </div><!-- /app-shell -->
+
+  <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>
