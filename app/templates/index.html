@@ -118,28 +118,39 @@
 
               {% set icons = ["🎯", "📝", "💯", "⏰", "💳"] %}
               {% set descs = ["% of classes attended", "% of tasks submitted", "Weighted avg score", "Weekly hours (0–20)", "whether the student's tuition payments are current (1 = Yes, 0 = No)"] %}
-              {% for field_id, _col, label, opts, _vrange in indicator_fields %}
+              {% for field_id, _col, label, field_type, field_config, _vrange in indicator_fields %}
               <div class="form-group">
                 <label for="{{ field_id }}">{{ icons[loop.index0] }}&nbsp; {{ label }} <span style="color:var(--muted-2); font-weight:400; text-transform:none; letter-spacing:0; font-size:11px;">&mdash; {{ descs[loop.index0] }}</span></label>
                 <div class="input-wrap">
+                  {% if field_type == "select" %}
+                  <select id="{{ field_id }}" name="{{ field_id }}" required>
+                    <option value="" selected disabled>Select Yes or No</option>
+                    {% for value, text in field_config %}
+                    <option value="{{ value }}">{{ text }}</option>
+                    {% endfor %}
+                  </select>
+                  {% else %}
                   <input
                     id="{{ field_id }}"
                     name="{{ field_id }}"
                     type="number"
-                    min="{{ opts.min }}"
-                    max="{{ opts.max }}"
-                    step="{{ opts.step }}"
-                    placeholder="{{ opts.placeholder }}"
-                    data-min="{{ opts.min }}"
-                    data-max="{{ opts.max }}"
+                    min="{{ field_config.min }}"
+                    max="{{ field_config.max }}"
+                    step="{{ field_config.step }}"
+                    placeholder="{{ field_config.placeholder }}"
+                    data-min="{{ field_config.min }}"
+                    data-max="{{ field_config.max }}"
                     required
                   />
                   <span class="val-indicator" id="vi-{{ field_id }}"></span>
+                  {% endif %}
                 </div>
+                {% if field_type == "number" %}
                 <div class="range-hint">
-                  <span>Min: {{ opts.min }}</span>
-                  <span>Max: {{ opts.max }}</span>
+                  <span>Min: {{ field_config.min }}</span>
+                  <span>Max: {{ field_config.max }}</span>
                 </div>
+                {% endif %}
               </div>
               {% endfor %}
 

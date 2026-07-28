@@ -56,12 +56,13 @@ PROFILE_FIELDS = [
     ),
 ]
 
-# Each field is: slug, training column, label, options/attrs, valid range.
+# Each field is: slug, training column, label, input type, options/attrs, valid range.
 INDICATOR_FIELDS = [
     (
         "attendance",
         "Attendance",
         "Attendance",
+        "number",
         {"min": 0, "max": 100, "step": 1, "placeholder": "0-100"},
         (0, 100),
     ),
@@ -69,6 +70,7 @@ INDICATOR_FIELDS = [
         "assignments",
         "Assignments",
         "Assignments",
+        "number",
         {"min": 0, "max": 100, "step": 1, "placeholder": "0-100"},
         (0, 100),
     ),
@@ -76,6 +78,7 @@ INDICATOR_FIELDS = [
         "marks",
         "Marks",
         "Marks",
+        "number",
         {"min": 0, "max": 100, "step": 1, "placeholder": "0-100"},
         (0, 100),
     ),
@@ -83,14 +86,16 @@ INDICATOR_FIELDS = [
         "study_hrs",
         "Study Hrs",
         "Study Hrs",
+        "number",
         {"min": 0, "max": 20, "step": 0.5, "placeholder": "0-20"},
         (0, 20),
     ),
     (
         "fees_up_to_date",
         "Fees Up To Date",
-        "Fees Up To Date (1 = Yes, 0 = No)",
-        {"min": 0, "max": 1, "step": 1, "placeholder": "0 or 1"},
+        "Fees Up To Date",
+        "select",
+        [("1", "Yes"), ("0", "No")],
         (0, 1),
     ),
 ]
@@ -113,10 +118,15 @@ def parse_indicators(form_data: dict) -> tuple[pd.DataFrame, list[str], dict[str
     warnings_list = []
     clean_form_data = {}
 
-    for field_slug, _, label, _, (vmin, vmax) in INDICATOR_FIELDS:
+    for field_slug, _, label, field_type, field_config, (vmin, vmax) in INDICATOR_FIELDS:
         raw = form_data.get(field_slug, "").strip()
         if raw == "":
             raise ValueError(f'Field "{label}" is required.')
+
+        if field_type == "select":
+            allowed_values = {value for value, _ in field_config}
+            if raw not in allowed_values:
+                raise ValueError(f'Field "{label}" must be a valid selection.')
 
         try:
             val = float(raw)
