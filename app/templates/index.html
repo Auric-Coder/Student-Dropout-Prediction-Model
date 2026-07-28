@@ -116,8 +116,8 @@
 
             <div class="form-grid single-col">
 
-              {% set icons = ["🎯", "📝", "💯", "⏰", "🙋"] %}
-              {% set descs = ["% of classes attended", "% of tasks submitted", "Weighted avg score", "Weekly hours (0–20)", "Score out of 10"] %}
+              {% set icons = ["🎯", "📝", "💯", "⏰", "💳"] %}
+              {% set descs = ["% of classes attended", "% of tasks submitted", "Weighted avg score", "Weekly hours (0–20)", "whether the student's tuition payments are current (1 = Yes, 0 = No)"] %}
               {% for field_id, _col, label, opts, _vrange in indicator_fields %}
               <div class="form-group">
                 <label for="{{ field_id }}">{{ icons[loop.index0] }}&nbsp; {{ label }} <span style="color:var(--muted-2); font-weight:400; text-transform:none; letter-spacing:0; font-size:11px;">&mdash; {{ descs[loop.index0] }}</span></label>

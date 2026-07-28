@@ -45,14 +45,13 @@ FEATURE_NAMES = [
     "Assignments",
     "Marks",
     "Study Hrs",
-    "Participation",
+    "Fees Up To Date",
 ]
 
 RATIO_SMOOTHING_STRENGTH = 3.0
 MIN_RATIO_DENOMINATOR = 1e-6
 ATTENDANCE_PRIOR_RATE = 0.75
 ASSIGNMENT_PRIOR_RATE = 0.42
-PARTICIPATION_PRIOR_RATE = 0.60
 
 
 def safe_divide(numerator, denominator):
@@ -119,7 +118,7 @@ def build_academic_indicators_legacy(df: pd.DataFrame) -> pd.DataFrame:
             "Assignments": np.clip(safe_divide(total_evaluations, total_enrolled * 3) * 100, 0, 100),
             "Marks": np.clip(weighted_grade * 5, 0, 100),
             "Study Hrs": np.clip(total_enrolled, 0, 20),
-            "Participation": np.clip(safe_divide(total_approved, total_evaluations) * 10, 0, 10),
+            "Fees Up To Date": np.zeros(len(total_enrolled)),  # not available pre-fix; placeholder for legacy comparison only
         }
     )
 
@@ -141,11 +140,12 @@ def build_academic_indicators(df: pd.DataFrame) -> pd.DataFrame:
         total_enrolled * 3,
         prior_rate=ASSIGNMENT_PRIOR_RATE,
     )
-    participation = smoothed_ratio(
-        total_approved,
-        total_evaluations,
-        prior_rate=PARTICIPATION_PRIOR_RATE,
-    )
+    # NOTE: Participation (approved/evaluations) was dropped — it correlated
+    # 0.93 with Attendance (both derived from `approved`), i.e. it was not an
+    # independent signal and caused unstable predictions on manually-entered,
+    # internally-inconsistent form inputs. Replaced with Tuition fees up to
+    # date, a genuinely independent column with real predictive signal.
+    fees_up_to_date = df["Tuition fees up to date"].astype(float)
 
     return pd.DataFrame(
         {
@@ -153,7 +153,7 @@ def build_academic_indicators(df: pd.DataFrame) -> pd.DataFrame:
             "Assignments": np.clip(assignments * 100, 0, 100),
             "Marks": np.clip(weighted_grade * 5, 0, 100),
             "Study Hrs": np.clip(total_enrolled, 0, 20),
-            "Participation": np.clip(participation * 10, 0, 10),
+            "Fees Up To Date": fees_up_to_date,
         }
     )
 
@@ -452,8 +452,11 @@ def main():
             "min_ratio_denominator": MIN_RATIO_DENOMINATOR,
             "attendance_prior_rate": ATTENDANCE_PRIOR_RATE,
             "assignment_prior_rate": ASSIGNMENT_PRIOR_RATE,
-            "participation_prior_rate": PARTICIPATION_PRIOR_RATE,
-            "note": "Ratios are computed per student and smoothed toward training priors.",
+            "note": (
+                "Attendance/Assignments are per-student ratios smoothed toward "
+                "training priors. Fees Up To Date is a raw binary indicator, "
+                "not a smoothed ratio."
+            ),
         },
         "metrics": {
             "accuracy": round(final_metrics["accuracy"], 4),
@@ -491,7 +494,6 @@ def main():
         f"- Minimum denominator      : {MIN_RATIO_DENOMINATOR}",
         f"- Attendance prior rate    : {ATTENDANCE_PRIOR_RATE}",
         f"- Assignment prior rate    : {ASSIGNMENT_PRIOR_RATE}",
-        f"- Participation prior rate : {PARTICIPATION_PRIOR_RATE}",
         "",
         "Features:",
         *[f"- {name}" for name in FEATURE_NAMES],

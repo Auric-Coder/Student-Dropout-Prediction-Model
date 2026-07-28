@@ -87,11 +87,11 @@ INDICATOR_FIELDS = [
         (0, 20),
     ),
     (
-        "participation",
-        "Participation",
-        "Participation",
-        {"min": 0, "max": 10, "step": 0.5, "placeholder": "0-10"},
-        (0, 10),
+        "fees_up_to_date",
+        "Fees Up To Date",
+        "Fees Up To Date (1 = Yes, 0 = No)",
+        {"min": 0, "max": 1, "step": 1, "placeholder": "0 or 1"},
+        (0, 1),
     ),
 ]
 

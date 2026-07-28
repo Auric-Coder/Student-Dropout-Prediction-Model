@@ -1,6 +1,6 @@
 # Student Dropout & Academic Success Predictor 🎓
 
-A machine-learning web application that predicts a university student's **dropout risk** based on five academic indicators derived from enrollment and grade data. The production model is a **Hybrid Soft-Voting Ensemble** (Calibrated Gradient Boosting + Logistic Regression + Random Forest) served through a Flask web interface.
+A machine-learning web application that predicts a university student's **dropout risk** based on five academic and fee-status indicators. The production model is a **Hybrid Soft-Voting Ensemble** (Calibrated Gradient Boosting + Logistic Regression + Random Forest) served through a Flask web interface.
 
 ---
 
@@ -94,7 +94,7 @@ Raw dataset columns are transformed into **5 human-readable academic indicators*
 | **Assignments** | Smoothed ratio of evaluations / (enrolled × 3) × 100 | 0 – 100 |
 | **Marks** | Weighted semester grade (by enrolled units) × 5 | 0 – 100 |
 | **Study Hrs** | Total enrolled curricular units (capped at 20) | 0 – 20 |
-| **Participation** | Smoothed ratio of approved / evaluations × 10 | 0 – 10 |
+| **Fees Up To Date** | Whether the student's tuition payments are current (1 = Yes, 0 = No) | 0 or 1 |
 
 **Smoothing parameters used in production:**
 
@@ -103,7 +103,6 @@ Raw dataset columns are transformed into **5 human-readable academic indicators*
 | Ratio smoothing strength | 3.0 |
 | Attendance prior rate | 0.75 |
 | Assignment prior rate | 0.42 |
-| Participation prior rate | 0.60 |
 
 ---
 
@@ -116,10 +115,10 @@ Four individual models are trained, cross-validated (5-fold stratified), and com
 
 | Model | Test ROC-AUC | Test Accuracy | CV ROC-AUC |
 |-------|-------------|---------------|------------|
-| Gradient Boosting | 0.9085 | 84.3% | 0.892 ± 0.014 |
-| Logistic Regression | 0.9047 | 85.6% | 0.877 ± 0.010 |
-| Random Forest | 0.9028 | 85.4% | 0.880 ± 0.014 |
-| **SVM (RBF)** | 0.8989 | 85.8% | 0.872 ± 0.009 |
+| Gradient Boosting | 0.9254 | 86.3% | 0.909 ± 0.008 |
+| Logistic Regression | 0.9181 | 87.3% | 0.897 ± 0.006 |
+| Random Forest | 0.9201 | 86.6% | 0.900 ± 0.010 |
+| **SVM (RBF)** | 0.9008 | 84.9% | 0.884 ± 0.009 |
 
 > *Numbers above are from Stage 1 exploration; final production model is selected from Stage 2 calibrated ensembles.*
 
@@ -128,11 +127,11 @@ Five calibrated / ensemble variants are built and the best is selected automatic
 
 | Ensemble Variant | Calibrated Weights | ROC-AUC | F1 | Brier |
 |------------------|--------------------|---------|-----|-------|
-| **Hybrid Soft Voting (Cal. GB+LR+RF)** ✅ | GB 35% · LR 40% · RF 25% | **0.9162** | **0.787** | **0.1039** |
-| Stable Soft Voting (Cal. LR+RF) | LR 60% · RF 40% | 0.9124 | 0.788 | 0.1051 |
-| GB Calibrated Isotonic | — | 0.9119 | 0.781 | 0.1055 |
-| GB Calibrated Sigmoid | — | 0.9114 | 0.778 | 0.1053 |
-| GB Uncalibrated | — | 0.9085 | 0.773 | 0.1061 |
+| **Hybrid Soft Voting (Cal. GB+LR+RF)** ✅ | GB 35% · LR 40% · RF 25% | **0.9284** | **0.810** | **0.0929** |
+| Stable Soft Voting (Cal. LR+RF) | LR 60% · RF 40% | 0.9256 | 0.807 | 0.0938 |
+| GB Calibrated Isotonic | — | 0.9247 | 0.793 | 0.0945 |
+| GB Calibrated Sigmoid | — | 0.9242 | 0.795 | 0.0942 |
+| GB Uncalibrated | — | 0.9254 | 0.801 | 0.0941 |
 
 **Ensemble weight rationale:**
 - **Hybrid (GB+LR+RF):** LR carries the most weight (40%) for its stable probability outputs; GB contributes 35% to capture non-linear interactions; RF is down-weighted (25%) to reduce variance.
@@ -152,20 +151,20 @@ Metrics from the last training run (`results/academic_indicator_metrics.txt`):
 |--------|-------|
 | **Selected Model** | Hybrid Soft Voting (Calibrated GB+LR+RF) |
 | **Ensemble Weights** | GB 35% · LR 40% · RF 25% |
-| **Test Accuracy** | **86.3%** |
-| **Test ROC-AUC** | **0.9162** |
-| **Test Precision** | **0.786** |
-| **Test Recall** | **0.789** |
-| **Test F1-score** | **0.787** |
-| **Brier Score** | **0.1039** |
-| **Decision Threshold** | **0.411** |
-| **5-Fold CV ROC-AUC** | **0.892 ± 0.014** |
+| **Test Accuracy** | **87.8%** |
+| **Test ROC-AUC** | **0.9284** |
+| **Test Precision** | **0.810** |
+| **Test Recall** | **0.810** |
+| **Test F1-score** | **0.810** |
+| **Brier Score** | **0.0929** |
+| **Decision Threshold** | **0.432** |
+| **5-Fold CV ROC-AUC** | **0.9086 ± 0.0083** |
 
 **Confusion Matrix (Test Set — 885 students):**
 ```
               Predicted: Graduate  Predicted: Dropout
-Actual: Graduate        540               61
-Actual: Dropout          60              224
+Actual: Graduate        547               54
+Actual: Dropout          54              230
 ```
 
 ---
@@ -221,7 +220,7 @@ Open your browser at **http://127.0.0.1:5000**
 
 The form accepts:
 - **Profile fields** — student name, department, roll number, semester
-- **Academic indicators** — attendance, assignments, marks, study hours, participation
+- **Academic indicators** — attendance, assignments, marks, study hours, and fees up to date (whether the student's tuition payments are current; 1 = Yes, 0 = No)
 
 Results page shows dropout probability, success probability, risk level badge, and a summary of all entered indicators.
 
@@ -236,7 +235,7 @@ python models/train_academic_indicator_model.py
 ```
 
 The script will:
-1. Engineer 5 Bayesian-smoothed academic indicators from the raw dataset.
+1. Engineer five academic indicators from the raw dataset, including the binary Fees Up To Date field.
 2. Train and cross-validate 4 candidate models (LR, RF, GB, SVM).
 3. Build and evaluate 5 calibrated / ensemble variants.
 4. Auto-select the best production model.

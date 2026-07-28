@@ -169,11 +169,11 @@
             </div>
           </div>
           <div class="indicator-card">
-            <span class="ind-icon">🙋</span>
-            <span class="ind-label">Participation</span>
-            <span class="ind-value">{{ indicator_data.participation }}</span>
+            <span class="ind-icon">💳</span>
+            <span class="ind-label">Fees Up To Date</span>
+            <span class="ind-value">{{ indicator_data.fees_up_to_date }}</span>
             <div class="ind-bar-wrap">
-              <div class="ind-bar" style="width: {{ (indicator_data.participation / 10 * 100) | round(1) }}%;"></div>
+              <div class="ind-bar" style="width: {{ indicator_data.fees_up_to_date * 100 }}%;"></div>
             </div>
           </div>
         </div>

@@ -2,162 +2,147 @@ Academic Indicator Dropout Model Metrics
 ==================================================
 Selected model       : Hybrid Soft Voting (Calibrated GB+LR+RF)
 Input features       : 5
-Test accuracy        : 0.863277
-Test ROC-AUC         : 0.916173
-Test precision       : 0.785965
-Test recall          : 0.788732
-Test F1-score        : 0.787346
-Decision threshold   : 0.410974
-5-fold CV ROC-AUC    : 0.891564 +/- 0.013750
+Test accuracy        : 0.877966
+Test ROC-AUC         : 0.928394
+Test precision       : 0.809859
+Test recall          : 0.809859
+Test F1-score        : 0.809859
+Decision threshold   : 0.432359
+5-fold CV ROC-AUC    : 0.908556 +/- 0.008275
 
 Production feature safeguards:
 - Ratio smoothing strength : 3.0
 - Minimum denominator      : 1e-06
 - Attendance prior rate    : 0.75
 - Assignment prior rate    : 0.42
-- Participation prior rate : 0.6
 
 Features:
 - Attendance
 - Assignments
 - Marks
 - Study Hrs
-- Participation
+- Fees Up To Date
 
 Before / after comparison:
-Before fixes (Hybrid Soft Voting (Calibrated GB+LR+RF), legacy ratios, threshold=0.5)
--------------------------------------------------------------------------------------
-ROC-AUC              : 0.903605
-Accuracy             : 0.870056
-Precision            : 0.802867
-Recall               : 0.788732
-F1-score             : 0.795737
-Brier score          : 0.111409
-Log loss             : 0.369338
-Decision threshold   : 0.500000
-Confusion Matrix:
-[[546  55]
- [ 60 224]]
-
 After ratio fixes (Gradient Boosting, tuned threshold)
 ------------------------------------------------------
-ROC-AUC              : 0.908459
-Accuracy             : 0.842938
-Precision            : 0.721713
-Recall               : 0.830986
-F1-score             : 0.772504
-Brier score          : 0.106119
-Log loss             : 0.344325
-Decision threshold   : 0.337165
+ROC-AUC              : 0.925350
+Accuracy             : 0.863277
+Precision            : 0.752322
+Recall               : 0.855634
+F1-score             : 0.800659
+Brier score          : 0.094149
+Log loss             : 0.310993
+Decision threshold   : 0.326711
 Confusion Matrix:
-[[510  91]
- [ 48 236]]
+[[521  80]
+ [ 41 243]]
 
 After hybrid model (selected production candidate)
 --------------------------------------------------
-ROC-AUC              : 0.916173
-Accuracy             : 0.863277
-Precision            : 0.785965
-Recall               : 0.788732
-F1-score             : 0.787346
-Brier score          : 0.103876
-Log loss             : 0.344653
-Decision threshold   : 0.410974
+ROC-AUC              : 0.928394
+Accuracy             : 0.877966
+Precision            : 0.809859
+Recall               : 0.809859
+F1-score             : 0.809859
+Brier score          : 0.092914
+Log loss             : 0.313015
+Decision threshold   : 0.432359
 Confusion Matrix:
-[[540  61]
- [ 60 224]]
+[[547  54]
+ [ 54 230]]
 
 Candidate comparison:
-- Gradient Boosting: test_auc=0.908459, test_accuracy=0.842938, test_f1=0.772504, cv_auc=0.891564+/-0.013750
-- Logistic Regression: test_auc=0.904695, test_accuracy=0.856497, test_f1=0.785110, cv_auc=0.876864+/-0.010091
-- Random Forest: test_auc=0.902762, test_accuracy=0.854237, test_f1=0.770053, cv_auc=0.879585+/-0.014340
-- SVM: test_auc=0.898924, test_accuracy=0.857627, test_f1=0.786441, cv_auc=0.871538+/-0.009309
+- Gradient Boosting: test_auc=0.925350, test_accuracy=0.863277, test_f1=0.800659, cv_auc=0.908556+/-0.008275
+- Random Forest: test_auc=0.920063, test_accuracy=0.865537, test_f1=0.800670, cv_auc=0.899701+/-0.009856
+- Logistic Regression: test_auc=0.918071, test_accuracy=0.873446, test_f1=0.802120, cv_auc=0.896579+/-0.006201
+- SVM: test_auc=0.900843, test_accuracy=0.848588, test_f1=0.788644, cv_auc=0.884213+/-0.009114
 
 Calibration and ensemble comparison:
-- Hybrid Soft Voting (Calibrated GB+LR+RF): auc=0.916173, precision=0.785965, recall=0.788732, f1=0.787346, brier=0.103876, threshold=0.410974
-- Stable Soft Voting (Calibrated LR+RF): auc=0.912446, precision=0.797834, recall=0.778169, f1=0.787879, brier=0.105127, threshold=0.420094
-- Gradient Boosting (Calibrated Isotonic): auc=0.911878, precision=0.733746, recall=0.834507, f1=0.780890, brier=0.105504, threshold=0.375069
-- Gradient Boosting (Calibrated Sigmoid): auc=0.911377, precision=0.734375, recall=0.827465, f1=0.778146, brier=0.105292, threshold=0.364201
-- Gradient Boosting (Uncalibrated): auc=0.908459, precision=0.721713, recall=0.830986, f1=0.772504, brier=0.106119, threshold=0.337165
+- Hybrid Soft Voting (Calibrated GB+LR+RF): auc=0.928394, precision=0.809859, recall=0.809859, f1=0.809859, brier=0.092914, threshold=0.432359
+- Stable Soft Voting (Calibrated LR+RF): auc=0.925558, precision=0.790541, recall=0.823944, f1=0.806897, brier=0.093796, threshold=0.389609
+- Gradient Boosting (Uncalibrated): auc=0.925350, precision=0.752322, recall=0.855634, f1=0.800659, brier=0.094149, threshold=0.326711
+- Gradient Boosting (Calibrated Isotonic): auc=0.924691, precision=0.841897, recall=0.750000, f1=0.793296, brier=0.094516, threshold=0.447722
+- Gradient Boosting (Calibrated Sigmoid): auc=0.924199, precision=0.743119, recall=0.855634, f1=0.795417, brier=0.094215, threshold=0.329886
 
 Detailed Model Reports:
 
 Gradient Boosting
 -----------------
-Test accuracy        : 0.842938
-Test ROC-AUC         : 0.908459
-5-fold CV ROC-AUC    : 0.891564 +/- 0.013750
+Test accuracy        : 0.863277
+Test ROC-AUC         : 0.925350
+5-fold CV ROC-AUC    : 0.908556 +/- 0.008275
 
 Classification Report:
               precision    recall  f1-score   support
 
-           0       0.91      0.85      0.88       601
-           1       0.72      0.83      0.77       284
-
-    accuracy                           0.84       885
-   macro avg       0.82      0.84      0.83       885
-weighted avg       0.85      0.84      0.85       885
-
-Confusion Matrix:
-[[510  91]
- [ 48 236]]
-
-Logistic Regression
--------------------
-Test accuracy        : 0.856497
-Test ROC-AUC         : 0.904695
-5-fold CV ROC-AUC    : 0.876864 +/- 0.010091
-
-Classification Report:
-              precision    recall  f1-score   support
-
-           0       0.91      0.88      0.89       601
-           1       0.76      0.82      0.79       284
+           0       0.93      0.87      0.90       601
+           1       0.75      0.86      0.80       284
 
     accuracy                           0.86       885
-   macro avg       0.83      0.85      0.84       885
-weighted avg       0.86      0.86      0.86       885
+   macro avg       0.84      0.86      0.85       885
+weighted avg       0.87      0.86      0.87       885
 
 Confusion Matrix:
-[[526  75]
- [ 52 232]]
+[[521  80]
+ [ 41 243]]
 
 Random Forest
 -------------
-Test accuracy        : 0.854237
-Test ROC-AUC         : 0.902762
-5-fold CV ROC-AUC    : 0.879585 +/- 0.014340
+Test accuracy        : 0.865537
+Test ROC-AUC         : 0.920063
+5-fold CV ROC-AUC    : 0.899701 +/- 0.009856
 
 Classification Report:
               precision    recall  f1-score   support
 
-           0       0.89      0.90      0.89       601
-           1       0.78      0.76      0.77       284
+           0       0.92      0.88      0.90       601
+           1       0.76      0.84      0.80       284
 
-    accuracy                           0.85       885
-   macro avg       0.83      0.83      0.83       885
-weighted avg       0.85      0.85      0.85       885
-
-Confusion Matrix:
-[[540  61]
- [ 68 216]]
-
-SVM
----
-Test accuracy        : 0.857627
-Test ROC-AUC         : 0.898924
-5-fold CV ROC-AUC    : 0.871538 +/- 0.009309
-
-Classification Report:
-              precision    recall  f1-score   support
-
-           0       0.91      0.88      0.89       601
-           1       0.76      0.82      0.79       284
-
-    accuracy                           0.86       885
-   macro avg       0.83      0.85      0.84       885
-weighted avg       0.86      0.86      0.86       885
+    accuracy                           0.87       885
+   macro avg       0.84      0.86      0.85       885
+weighted avg       0.87      0.87      0.87       885
 
 Confusion Matrix:
 [[527  74]
- [ 52 232]]
+ [ 45 239]]
+
+Logistic Regression
+-------------------
+Test accuracy        : 0.873446
+Test ROC-AUC         : 0.918071
+5-fold CV ROC-AUC    : 0.896579 +/- 0.006201
+
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.91      0.91      0.91       601
+           1       0.80      0.80      0.80       284
+
+    accuracy                           0.87       885
+   macro avg       0.86      0.85      0.85       885
+weighted avg       0.87      0.87      0.87       885
+
+Confusion Matrix:
+[[546  55]
+ [ 57 227]]
+
+SVM
+---
+Test accuracy        : 0.848588
+Test ROC-AUC         : 0.900843
+5-fold CV ROC-AUC    : 0.884213 +/- 0.009114
+
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.94      0.83      0.88       601
+           1       0.71      0.88      0.79       284
+
+    accuracy                           0.85       885
+   macro avg       0.83      0.86      0.84       885
+weighted avg       0.87      0.85      0.85       885
+
+Confusion Matrix:
+[[501 100]
+ [ 34 250]]
