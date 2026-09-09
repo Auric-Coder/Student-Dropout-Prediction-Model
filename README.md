@@ -272,6 +272,35 @@ The script will:
 
 ---
 
+## Deploying to Render
+
+This repository includes a `render.yaml` Blueprint and starts Flask with Gunicorn
+in production. The trained model is approximately 117 MB, which is larger than
+GitHub's normal file limit, so it must be committed with Git LFS before deploying.
+
+```bash
+git lfs install
+git add .gitattributes .gitignore .python-version render.yaml requirements.txt
+git add models/academic_indicator_model.pkl
+git commit -m "Configure Render deployment"
+git push -u origin HEAD
+```
+
+Then in the [Render Dashboard](https://dashboard.render.com/), choose **New →
+Blueprint**, connect this repository, and deploy the detected `render.yaml`.
+Render installs the pinned dependencies and runs:
+
+```bash
+gunicorn --chdir app --bind 0.0.0.0:$PORT --workers 1 --timeout 120 app:app
+```
+
+Select a plan with sufficient memory for the scikit-learn ensemble. If the free
+512 MB instance reports an out-of-memory error while loading the model, choose a
+larger instance (the 2 GB plan is the practical starting point). The app does not
+require environment variables or a database.
+
+---
+
 ## License
 
 This project is released under the [MIT License](LICENSE).

@@ -19,7 +19,10 @@ ENV/
 .ipynb_checkpoints/
 
 # ── ML model artifacts (regenerate with training script) ──────────────────────
+# The production model is required at runtime. It is stored with Git LFS;
+# other generated model artifacts remain ignored.
 models/*.pkl
+!models/academic_indicator_model.pkl
 models/*.joblib
 models/*.h5
 
